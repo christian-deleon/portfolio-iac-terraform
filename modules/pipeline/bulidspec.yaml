@@ -1,0 +1,21 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo installing modules...
+      - npm ci
+  build:
+    commands:
+      - echo building webapp...
+      - npm run build
+  post_build:
+    commands:
+      - echo cleaning up bucket...
+      - aws s3 rm "s3://$DOMAIN_NAME" --recursive
+      - aws s3 cp ./build "s3://$DOMAIN_NAME" --recursive
+      - aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+
+cache:
+  paths:
+    - '/root/.npm'
